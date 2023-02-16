@@ -1,74 +1,64 @@
-setwd("/local/storage/JQ1/JQ1-R-Outputs/3W-vs-2M/")
+setwd("/local/storage/spatial")
 
 # Loading Packages ---------------------------------------------------------
 
 set.seed(1234)
 
-library(Seurat)
-library(dplyr)
-library(Matrix)
-library(sva)
-library(SingleR)
-library(reshape2)
-library(pheatmap)
-library(kableExtra)
-library(biomaRt)
-library(celda)
-library(scDblFinder)
+if (!requireNamespace("BiocManager", quietly = TRUE)) {
+   install.packages("BiocManager")
+}
+
+library(Seurat) #install.packages('Seurat')
+library(dplyr) #install.packages("dplyr")
+library(Matrix) #install.packages("Matrix")
+library(sva) #BiocManager::install("sva")
+library(SingleR) #BiocManager::install("SingleR")
+library(reshape2) #install.packages("reshape2")
+library(pheatmap) #install.packages("pheatmap")
+library(kableExtra) #install.packages("kableExtra")
+library(biomaRt) #BiocManager::install("biomaRt")
+library(celda) # BiocManager::install("celda")
+library(scDblFinder) # BiocManager::install("scDblFinder")
 library(SoupX) # install.packages("SoupX")
 library(tidyverse) # install.packages("tidyverse")
-library(knitr)
+library(knitr) #install.packages('knitr', dependencies = TRUE)
+library(DropletUtils) # install.packages("DropletUtils")
 
 if(!dir.exists("output")) dir.create("output")
 if(!dir.exists("data")) dir.create("data")
 
-# install.packages("DropletUtils")
 
+# Data Pre-processing ------------------------------------------------------
 
-# if (!requireNamespace("BiocManager", quietly = TRUE))
-#   install.packages("BiocManager")
-# BiocManager::install("scDblFinder")
-
-# if (!requireNamespace("BiocManager", quietly = TRUE)) {
-#   install.packages("BiocManager")
-# }
-# BiocManager::install("celda")
-
-
-
-########################################################################
-#
-#  1 Data preprocessing
-# 
-# ######################################################################
-#======Load the data files and Set up Seurat object =========================
-# Load the dataset
-
-# setup Seurat objects since both count matrices have already filtered
-# cells, we do no additional filtering here
-
+# Load sample data set
 df_samples <- readxl::read_excel("sample_info.xlsx")
 (samples <- df_samples$Samples)
 (conditions <- df_samples$Conditions)
-(experiments <- df_samples$Experiments)
 
-# testis_raw <- list()
-# testis_Seurat <- list()
-
+testis_raw <- list()
+testis_Seurat <- list()
 
 for(i in 1:length(samples)){
-  testis_raw[[i]] <- Read10X(data.dir = paste0("/local/storage/JQ1/JQ1-R-Outputs/3W-vs-2M/data/",
+  DBA_raw[[i]] <- Read10X(data.dir = paste0("/local/storage/spatial/spatial-CellRanger_Outs/",
                                                samples[i],"/outs/filtered_feature_bc_matrix/"))
-  colnames(testis_raw[[i]]) <- paste0(samples[i],"_",colnames(testis_raw[[i]]))
-  testis_Seurat[[i]] <- CreateSeuratObject(testis_raw[[i]],
+  colnames(DBA_raw[[i]]) <- paste0(samples[i],"_",colnames(DBA_raw[[i]]))
+  DBA_Seurat[[i]] <- CreateSeuratObject(DBA_raw[[i]],
                                            min.cells = 3,
                                            min.genes = 200,
                                            names.delim = "_",
-                                           project = "3W-vs-2M")
+                                           project = "DBA-Enriched")
   # These next lines of code add different information (lines 28 & 29) to the meta-data
-  testis_Seurat[[i]]@meta.data$conditions <- conditions[i]
-  testis_Seurat[[i]]@meta.data$experiments <- experiments[i]
+  DBA_Seurat[[i]]@meta.data$conditions <- conditions[i]
+  DBA_Seurat[[i]]@meta.data$experiments <- experiments[i]
 }
+
+
+
+
+
+
+
+
 
 
 # testis <- Reduce(function(x, y) merge(x, y), testis_Seurat)
